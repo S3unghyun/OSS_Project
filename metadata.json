@@ -1,0 +1,6 @@
+{
+  "name": "Tasks",
+  "description": "A sophisticated, high-performance task manager designed with Modern Minimalism and Tonal Layering for daily productivity.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
