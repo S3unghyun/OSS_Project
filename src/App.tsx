@@ -12,9 +12,10 @@ const STORAGE_KEY = 'group_todo_workspace_v1';
 const CURRENT_DATE_STR = '2026-06-10';
 
 const USERS: User[] = [
-  { id: 'u-host', name: '김호스트', email: 'host@example.com', avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=KH' },
-  { id: 'u-mina', name: '박미나', email: 'mina@example.com', avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=PM' },
-  { id: 'u-jun', name: '이준', email: 'jun@example.com', avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=LJ' }
+  { id: 'u-host', name: '류상훈', email: 'sanghun@example.com', avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=RSH' },
+  { id: 'u-seulgichan', name: '이슬기찬', email: 'seulgichan@example.com', avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=LSG' },
+  { id: 'u-minjun', name: '최민준', email: 'minjun@example.com', avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=CMJ' },
+  { id: 'u-seunghyun', name: '하승현', email: 'seunghyun@example.com', avatarUrl: 'https://api.dicebear.com/8.x/initials/svg?seed=HSH' }
 ];
 
 const CURRENT_USER_ID = 'u-host';
@@ -44,8 +45,8 @@ const INITIAL_TASKS: Task[] = [
     dueDateValue: '2026-06-10',
     weight: 3,
     createdById: 'u-host',
-    assigneeId: 'u-mina',
-    completedById: 'u-mina',
+    assigneeId: 'u-seulgichan',
+    completedById: 'u-seulgichan',
     completedAt: Date.now() - 7200000,
     completionNote: '초대 링크 화면까지 검수 완료',
     postponeCount: 0
@@ -74,8 +75,8 @@ const INITIAL_TASKS: Task[] = [
     dueDate: '2026-06-11 12:00',
     dueDateValue: '2026-06-11',
     weight: 2,
-    createdById: 'u-jun',
-    assigneeId: 'u-jun',
+    createdById: 'u-minjun',
+    assigneeId: 'u-seunghyun',
     postponeCount: 0
   }
 ];
@@ -83,7 +84,7 @@ const INITIAL_TASKS: Task[] = [
 const INITIAL_SETTINGS: AppSettings = {
   darkMode: false,
   notifications: true,
-  accountName: '김호스트',
+  accountName: '류상훈',
   accountPlan: 'Team Beta',
   accountAvatar: USERS[0].avatarUrl || ''
 };
@@ -295,7 +296,6 @@ export default function App() {
       inviteCode: `https://todo-room.app/invite/${Math.random().toString(36).slice(2, 9).toUpperCase()}`
     };
     setRoom(nextRoom);
-    setTasks([]);
   };
 
   const handleClearAllData = () => {
