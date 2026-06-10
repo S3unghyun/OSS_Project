@@ -9,6 +9,7 @@ interface CategoriesViewProps {
   onStatusChange: (id: string, status: Task['status']) => void;
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
+  onPostpone?: (id: string) => void;
 }
 
 export default function CategoriesView({
@@ -16,7 +17,8 @@ export default function CategoriesView({
   onToggleStatus,
   onStatusChange,
   onEdit,
-  onDelete
+  onDelete,
+  onPostpone
 }: CategoriesViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<Task['category'] | 'All'>('All');
 
@@ -187,6 +189,7 @@ export default function CategoriesView({
                 onStatusChange={onStatusChange}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onPostpone={onPostpone}
               />
             ))
           ) : (
