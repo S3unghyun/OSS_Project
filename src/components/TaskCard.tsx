@@ -12,6 +12,19 @@ interface TaskCardProps {
   onPostpone?: (id: string) => void;
 }
 
+const priorityLabel: Record<Task['priority'], string> = {
+  Low: '낮음',
+  Medium: '보통',
+  High: '높음'
+};
+
+const categoryLabel: Record<Task['category'], string> = {
+  Work: '업무',
+  Personal: '개인',
+  Study: '공부',
+  'Team Project': '팀 프로젝트'
+};
+
 export default function TaskCard({
   task,
   onToggleStatus,
@@ -23,7 +36,6 @@ export default function TaskCard({
   const isCompleted = task.status === 'Completed';
   const postpones = task.postponeCount || 0;
 
-  // Category Icon Map
   const getCategoryIcon = (cat: Task['category']) => {
     switch (cat) {
       case 'Work':
@@ -39,7 +51,6 @@ export default function TaskCard({
     }
   };
 
-  // Priority Color Map
   const getPriorityClasses = (prio: Task['priority']) => {
     switch (prio) {
       case 'High':
@@ -53,7 +64,6 @@ export default function TaskCard({
     }
   };
 
-  // Border and shadow styling for procrastination warnings
   let postponeStyles = 'border-outline-variant/10';
   if (!isCompleted) {
     if (postpones === 1) {
@@ -69,7 +79,6 @@ export default function TaskCard({
         isCompleted ? 'opacity-60 shadow-none' : ''
       }`}
     >
-      {/* Checkbox Button */}
       <div className="mt-1 flex-shrink-0">
         <button
           onClick={() => onToggleStatus(task.id)}
@@ -78,13 +87,12 @@ export default function TaskCard({
               ? 'bg-primary border-primary text-white scale-100'
               : 'border-outline hover:border-primary-container hover:scale-105'
           }`}
-          aria-label="Toggle Complete"
+          aria-label="완료 상태 전환"
         >
           {isCompleted && <Check className="w-4 h-4 stroke-[3]" />}
         </button>
       </div>
 
-      {/* Title & Badge Metadata */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 flex-wrap">
           {postpones >= 2 && !isCompleted && (
@@ -100,22 +108,19 @@ export default function TaskCard({
         </div>
         
         <div className="flex flex-wrap gap-2 mt-2 items-center">
-          {/* Priority Badge */}
           <span
             className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getPriorityClasses(
               task.priority
             )}`}
           >
-            {task.priority}
+            {priorityLabel[task.priority]}
           </span>
 
-          {/* Category Badge */}
           <div className="flex items-center gap-1 text-on-surface-variant text-[11px] font-medium py-0.5 px-1.5 rounded-md bg-surface-container-low/50">
             <span className="text-primary-container">{getCategoryIcon(task.category)}</span>
-            <span>{task.category}</span>
+            <span>{categoryLabel[task.category]}</span>
           </div>
 
-          {/* Due date badge if exists */}
           {task.dueDate && (
             <div className="flex items-center gap-1 text-[11px] text-outline font-medium">
               <Calendar className="w-3 h-3 text-outline/80" />
@@ -123,7 +128,6 @@ export default function TaskCard({
             </div>
           )}
 
-          {/* Postpone Count badge */}
           {postpones > 0 && !isCompleted && (
             <span className={`flex items-center gap-0.5 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border ${
               postpones >= 2 
@@ -137,28 +141,25 @@ export default function TaskCard({
         </div>
       </div>
 
-      {/* Right Column: Status Select dropdown & Edit/Delete/Postpone buttons */}
       <div className="flex flex-col items-end gap-3 flex-shrink-0">
-        {/* Status Dropdown conforming to mockups */}
         <div className="relative">
           <select
             value={task.status}
             onChange={(e) => onStatusChange(task.id, e.target.value as Task['status'])}
             className="text-[11px] bg-surface-container font-semibold py-1 px-2 pr-4 rounded-lg border-none focus:ring-1 focus:ring-primary/20 shadow-sm cursor-pointer text-on-surface-variant hover:bg-surface-container-high transition-colors"
           >
-            <option value="To Do">To Do</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Completed">Done</option>
+            <option value="To Do">할 일</option>
+            <option value="In Progress">진행 중</option>
+            <option value="Completed">완료</option>
           </select>
         </div>
 
-        {/* Quick Actions */}
         <div className="flex gap-2 items-center">
           {onPostpone && !isCompleted && (
             <button
               onClick={() => onPostpone(task.id)}
               className="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 transition-all p-1 hover:bg-amber-100 dark:hover:bg-amber-950/50 rounded flex items-center justify-center hover:scale-105 active:scale-95"
-              title="하루 미루기 (마감 연장)"
+              title="하루 미루기"
             >
               <Clock className="w-4 h-4 font-bold" />
             </button>
@@ -166,14 +167,14 @@ export default function TaskCard({
           <button
             onClick={() => onEdit(task)}
             className="text-on-surface-variant hover:text-primary transition-colors p-1 hover:bg-surface-container rounded"
-            title="Edit Task"
+            title="할 일 수정"
           >
             <Edit2 className="w-4 h-4" />
           </button>
           <button
             onClick={() => onDelete(task.id)}
             className="text-on-surface-variant hover:text-danger-rose transition-colors p-1 hover:bg-danger-container/10 rounded"
-            title="Delete Task"
+            title="할 일 삭제"
           >
             <Trash2 className="w-4 h-4" />
           </button>

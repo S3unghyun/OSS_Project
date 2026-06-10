@@ -1,6 +1,6 @@
 {
-  "name": "Tasks",
-  "description": "A sophisticated, high-performance task manager designed with Modern Minimalism and Tonal Layering for daily productivity.",
+  "name": "할 일",
+  "description": "일상 생산성을 위한 세련되고 빠른 할 일 관리 앱입니다.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
