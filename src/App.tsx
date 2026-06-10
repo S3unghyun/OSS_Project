@@ -21,7 +21,7 @@ const CURRENT_USER_ID = 'u-host';
 
 const INITIAL_ROOM: Room = {
   id: 'room-1',
-  name: 'OSS 프로젝트 발표 준비방',
+  name: 'OSS_GROUP_TODO-LIST',
   date: CURRENT_DATE_STR,
   hostId: CURRENT_USER_ID,
   inviteCode: 'https://todo-room.app/invite/OSS-TEAM-610',
