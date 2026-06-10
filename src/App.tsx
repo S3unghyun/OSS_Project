@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ListTodo, Grid, Settings as SettingsIcon, Calendar, Trophy, Sparkles, Star } from 'lucide-react';
+import { ListTodo, Grid, Settings as SettingsIcon, Calendar, Trophy, Sparkles } from 'lucide-react';
 import { Task, AppSettings, TabType, ActionLog } from './types';
 import AllTasksView from './components/AllTasksView';
 import CalendarView from './components/CalendarView';
@@ -8,13 +8,12 @@ import SettingsView from './components/SettingsView';
 import NewTaskModal from './components/NewTaskModal';
 import { motion, AnimatePresence } from 'motion/react';
 
-// Today is Monday, June 8, 2026 as per workspace metadata
 const CURRENT_DATE_STR = "2026-06-08";
 
 const INITIAL_TASKS: Task[] = [
   {
     id: '1',
-    title: 'Revise design tokens',
+    title: '디자인 토큰 정리하기',
     priority: 'High',
     category: 'Study',
     status: 'To Do',
@@ -24,7 +23,7 @@ const INITIAL_TASKS: Task[] = [
   },
   {
     id: '2',
-    title: 'Weekly grocery run',
+    title: '주간 장보기',
     priority: 'Medium',
     category: 'Personal',
     status: 'In Progress',
@@ -34,7 +33,7 @@ const INITIAL_TASKS: Task[] = [
   },
   {
     id: '3',
-    title: 'Finalize project scope',
+    title: '프로젝트 범위 확정하기',
     priority: 'High',
     category: 'Work',
     status: 'Completed',
@@ -44,7 +43,7 @@ const INITIAL_TASKS: Task[] = [
   },
   {
     id: '4',
-    title: 'Coffee with Sarah',
+    title: '사라와 커피 약속',
     priority: 'Low',
     category: 'Personal',
     status: 'To Do',
@@ -59,22 +58,26 @@ const AVATAR_URL_ALEX = "https://lh3.googleusercontent.com/aida-public/AB6AXuCoi
 const INITIAL_SETTINGS: AppSettings = {
   darkMode: false,
   notifications: true,
-  accountName: 'Alex Henderson',
-  accountPlan: 'Pro Plan',
+  accountName: '알렉스 헨더슨',
+  accountPlan: '프로 요금제',
   accountAvatar: AVATAR_URL_ALEX
 };
 
-// Date shifting helper
 const addDays = (dateStr: string, days: number): string => {
   const dateObj = new Date(dateStr);
-  if (isNaN(dateObj.getTime())) {
-    return dateStr;
-  }
+  if (isNaN(dateObj.getTime())) return dateStr;
   dateObj.setDate(dateObj.getDate() + days);
   const yyyy = dateObj.getFullYear();
   const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
   const dd = String(dateObj.getDate()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
+};
+
+const tabLabel: Record<TabType, string> = {
+  'All Tasks': '전체',
+  Calendar: '달력',
+  Categories: '분류',
+  Settings: '설정'
 };
 
 export default function App() {
@@ -85,12 +88,9 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [calendarPrefillDate, setCalendarPrefillDate] = useState<string | undefined>(undefined);
-
-  // Dopamine celebration status
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebratedTaskTitle, setCelebratedTaskTitle] = useState('');
 
-  // Load from local storage on mount
   useEffect(() => {
     const storedTasks = localStorage.getItem('todo_tasks_react');
     if (storedTasks) {
@@ -111,8 +111,6 @@ export default function App() {
       } catch (e) {
         setActionLogs([]);
       }
-    } else {
-      setActionLogs([]);
     }
 
     const storedSettings = localStorage.getItem('todo_settings_react');
@@ -125,7 +123,6 @@ export default function App() {
     }
   }, []);
 
-  // Sync dark mode class on setting change
   useEffect(() => {
     if (settings.darkMode) {
       document.documentElement.classList.add('dark');
@@ -138,90 +135,78 @@ export default function App() {
     }
   }, [settings.darkMode]);
 
-  // Save changes helper
   const saveToStorage = (updatedTasks: Task[]) => {
     localStorage.setItem('todo_tasks_react', JSON.stringify(updatedTasks));
   };
 
-  // 1. Clock Postpone Button click handler (미루기 퀵 버튼)
+  const writeLog = (log: ActionLog) => {
+    setActionLogs(prev => {
+      const updatedLogs = [log, ...prev];
+      localStorage.setItem('todo_action_logs_react', JSON.stringify(updatedLogs));
+      return updatedLogs;
+    });
+  };
+
   const handlePostponeTask = (id: string) => {
     const updated = tasks.map((task) => {
-      if (task.id === id) {
-        const nextPostpones = (task.postponeCount || 0) + 1;
-        const currentDueDateVal = task.dueDateValue || CURRENT_DATE_STR;
-        const nextDateValue = addDays(currentDueDateVal, 1);
-        
-        let nextDueDate = task.dueDate;
-        if (task.dueDate && task.dueDate.includes(' ')) {
-          const parts = task.dueDate.split(' ');
-          nextDueDate = `${nextDateValue} ${parts[1] || '12:00'}`;
-        } else {
-          nextDueDate = `${nextDateValue} 12:00`;
-        }
+      if (task.id !== id) return task;
 
-        // Add to ActionLog
-        const log: ActionLog = {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
-          taskId: task.id,
-          taskTitle: task.title,
-          category: task.category,
-          actionType: 'Postpone',
-          timestamp: Date.now()
-        };
-        const updatedLogs = [log, ...actionLogs];
-        setActionLogs(updatedLogs);
-        localStorage.setItem('todo_action_logs_react', JSON.stringify(updatedLogs));
+      const nextPostpones = (task.postponeCount || 0) + 1;
+      const currentDueDateVal = task.dueDateValue || CURRENT_DATE_STR;
+      const nextDateValue = addDays(currentDueDateVal, 1);
+      let nextDueDate = task.dueDate;
 
-        return {
-          ...task,
-          postponeCount: nextPostpones,
-          dueDateValue: nextDateValue,
-          dueDate: nextDueDate
-        };
+      if (task.dueDate && task.dueDate.includes(' ')) {
+        const parts = task.dueDate.split(' ');
+        nextDueDate = `${nextDateValue} ${parts[1] || '12:00'}`;
+      } else {
+        nextDueDate = `${nextDateValue} 12:00`;
       }
-      return task;
+
+      writeLog({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
+        taskId: task.id,
+        taskTitle: task.title,
+        category: task.category,
+        actionType: 'Postpone',
+        timestamp: Date.now()
+      });
+
+      return {
+        ...task,
+        postponeCount: nextPostpones,
+        dueDateValue: nextDateValue,
+        dueDate: nextDueDate
+      };
     });
 
     setTasks(updated);
     saveToStorage(updated);
   };
 
-  // Toggle checklist checkmark (Dopamine Triggered)
   const handleToggleStatus = (id: string) => {
     let triggeredCelebration = false;
     let titleToCelebrate = '';
 
     const updated = tasks.map((task) => {
-      if (task.id === id) {
-        const nextStatus: Task['status'] = task.status === 'Completed' ? 'To Do' : 'Completed';
-        
-        // Log action
-        const log: ActionLog = {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
-          taskId: task.id,
-          taskTitle: task.title,
-          category: task.category,
-          actionType: nextStatus === 'Completed' ? 'Complete' : 'Incomplete',
-          timestamp: Date.now()
-        };
-        
-        setActionLogs(prev => {
-          const updatedLogs = [log, ...prev];
-          localStorage.setItem('todo_action_logs_react', JSON.stringify(updatedLogs));
-          return updatedLogs;
-        });
+      if (task.id !== id) return task;
 
-        if (nextStatus === 'Completed') {
-          triggeredCelebration = true;
-          titleToCelebrate = task.title;
-        }
+      const nextStatus: Task['status'] = task.status === 'Completed' ? 'To Do' : 'Completed';
+      writeLog({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
+        taskId: task.id,
+        taskTitle: task.title,
+        category: task.category,
+        actionType: nextStatus === 'Completed' ? 'Complete' : 'Incomplete',
+        timestamp: Date.now()
+      });
 
-        return { 
-          ...task, 
-          status: nextStatus
-        };
+      if (nextStatus === 'Completed') {
+        triggeredCelebration = true;
+        titleToCelebrate = task.title;
       }
-      return task;
+
+      return { ...task, status: nextStatus };
     });
 
     setTasks(updated);
@@ -230,45 +215,32 @@ export default function App() {
     if (triggeredCelebration) {
       setCelebratedTaskTitle(titleToCelebrate);
       setShowCelebration(true);
-      setTimeout(() => {
-        setShowCelebration(false);
-      }, 3800);
+      setTimeout(() => setShowCelebration(false), 3800);
     }
   };
 
-  // Dropdown manual status change (Dopamine Triggered)
   const handleStatusChange = (id: string, newStatus: Task['status']) => {
     let triggeredCelebration = false;
     let titleToCelebrate = '';
 
     const updated = tasks.map((task) => {
-      if (task.id === id) {
-        if (task.status !== 'Completed' && newStatus === 'Completed') {
-          triggeredCelebration = true;
-          titleToCelebrate = task.title;
-        }
+      if (task.id !== id) return task;
 
-        const log: ActionLog = {
-          id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
-          taskId: task.id,
-          taskTitle: task.title,
-          category: task.category,
-          actionType: newStatus === 'Completed' ? 'Complete' : 'Incomplete',
-          timestamp: Date.now()
-        };
-
-        setActionLogs(prev => {
-          const updatedLogs = [log, ...prev];
-          localStorage.setItem('todo_action_logs_react', JSON.stringify(updatedLogs));
-          return updatedLogs;
-        });
-
-        return { 
-          ...task, 
-          status: newStatus
-        };
+      if (task.status !== 'Completed' && newStatus === 'Completed') {
+        triggeredCelebration = true;
+        titleToCelebrate = task.title;
       }
-      return task;
+
+      writeLog({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
+        taskId: task.id,
+        taskTitle: task.title,
+        category: task.category,
+        actionType: newStatus === 'Completed' ? 'Complete' : 'Incomplete',
+        timestamp: Date.now()
+      });
+
+      return { ...task, status: newStatus };
     });
 
     setTasks(updated);
@@ -277,34 +249,25 @@ export default function App() {
     if (triggeredCelebration) {
       setCelebratedTaskTitle(titleToCelebrate);
       setShowCelebration(true);
-      setTimeout(() => {
-        setShowCelebration(false);
-      }, 3805);
+      setTimeout(() => setShowCelebration(false), 3805);
     }
   };
 
-  // Edit existing task
   const handleEditTask = (task: Task) => {
     setEditingTask(task);
     setIsModalOpen(true);
   };
 
-  // Delete task
   const handleDeleteTask = (id: string) => {
     const taskToDelete = tasks.find((t) => t.id === id);
     if (taskToDelete) {
-      const log: ActionLog = {
+      writeLog({
         id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
         taskId: taskToDelete.id,
         taskTitle: taskToDelete.title,
         category: taskToDelete.category,
         actionType: 'Delete',
         timestamp: Date.now()
-      };
-      setActionLogs(prev => {
-        const updatedLogs = [log, ...prev];
-        localStorage.setItem('todo_action_logs_react', JSON.stringify(updatedLogs));
-        return updatedLogs;
       });
     }
 
@@ -313,15 +276,12 @@ export default function App() {
     saveToStorage(updated);
   };
 
-  // Save/Create task
   const handleSaveTask = (taskData: Omit<Task, 'id'> & { id?: string }) => {
     if (taskData.id) {
-      // Editing Mode
       const updated = tasks.map((t) => (t.id === taskData.id ? { ...t, ...taskData } as Task : t));
       setTasks(updated);
       saveToStorage(updated);
     } else {
-      // Create Mode
       const newTask: Task = {
         title: taskData.title,
         priority: taskData.priority,
@@ -329,22 +289,17 @@ export default function App() {
         status: 'To Do',
         dueDate: taskData.dueDate,
         dueDateValue: taskData.dueDateValue || CURRENT_DATE_STR,
-        postponeCount: 0
-      } as Task;
-      newTask.id = Date.now().toString();
+        postponeCount: 0,
+        id: Date.now().toString()
+      };
 
-      const log: ActionLog = {
+      writeLog({
         id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
         taskId: newTask.id,
         taskTitle: newTask.title,
         category: newTask.category,
         actionType: 'Create',
         timestamp: Date.now()
-      };
-      setActionLogs(prev => {
-        const updatedLogs = [log, ...prev];
-        localStorage.setItem('todo_action_logs_react', JSON.stringify(updatedLogs));
-        return updatedLogs;
       });
 
       const updated = [newTask, ...tasks];
@@ -354,9 +309,8 @@ export default function App() {
     setEditingTask(null);
   };
 
-  // Clear data
   const handleClearAllData = () => {
-    if (window.confirm('Are you sure you want to delete all tasks and stats? This cannot be undone.')) {
+    if (window.confirm('모든 할 일과 통계를 삭제할까요? 이 작업은 되돌릴 수 없습니다.')) {
       setTasks([]);
       setActionLogs([]);
       localStorage.removeItem('todo_tasks_react');
@@ -364,23 +318,18 @@ export default function App() {
     }
   };
 
-  // Sync Database
   const handleSyncDatabase = () => {
     saveToStorage(tasks);
   };
 
-  // Profile preferences
   const handleSettingsChange = (newSettings: AppSettings) => {
     setSettings(newSettings);
     localStorage.setItem('todo_settings_react', JSON.stringify(newSettings));
   };
 
-  // Determine current crisis state for adaptative layout
-  // Crisis Mode: Imminent Team Project not completed AND task progress < 50%
   const totalTasksCount = tasks.length;
   const completedTasksCount = tasks.filter((t) => t.status === 'Completed').length;
   const progressPercentage = totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
-
   const hasUrgentTeamProject = tasks.some(
     (t) =>
       t.category === 'Team Project' &&
@@ -399,10 +348,7 @@ export default function App() {
           ? 'bg-rose-50/70 text-rose-950' 
           : 'bg-surface-bg text-on-surface'
     }`}>
-      
       <div className="max-w-md mx-auto min-h-screen relative flex flex-col px-5 pb-20 pt-1">
-        
-        {/* Render Active View Layer */}
         <div className="flex-1">
           {activeTab === 'All Tasks' && (
             <AllTasksView
@@ -464,62 +410,28 @@ export default function App() {
           )}
         </div>
 
-        {/* Persistent Bottom Bar */}
         <nav className="fixed bottom-0 left-0 right-0 z-45 max-w-md mx-auto bg-surface-container/95 dark:bg-inverse-surface/95 backdrop-blur-md rounded-t-3xl border-t border-outline-variant/10 shadow-[0px_-4px_12px_rgba(0,0,0,0.03)] p-4 pb-safe flex justify-around items-center">
-          {/* All Tasks Tab */}
-          <button
-            onClick={() => setActiveTab('All Tasks')}
-            className={`flex flex-col items-center justify-center py-1.5 px-4 rounded-full transition-all duration-200 cursor-pointer ${
-              activeTab === 'All Tasks'
-                ? 'bg-secondary-container text-on-secondary-container font-semibold scale-105'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            <ListTodo className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] tracking-wide">All Tasks</span>
-          </button>
-
-          {/* Calendar Tab */}
-          <button
-            onClick={() => setActiveTab('Calendar')}
-            className={`flex flex-col items-center justify-center py-1.5 px-4 rounded-full transition-all duration-200 cursor-pointer ${
-              activeTab === 'Calendar'
-                ? 'bg-secondary-container text-on-secondary-container font-semibold scale-105'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            <Calendar className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] tracking-wide">Calendar</span>
-          </button>
-
-          {/* Categories Tab */}
-          <button
-            onClick={() => setActiveTab('Categories')}
-            className={`flex flex-col items-center justify-center py-1.5 px-4 rounded-full transition-all duration-200 cursor-pointer ${
-              activeTab === 'Categories'
-                ? 'bg-secondary-container text-on-secondary-container font-semibold scale-105'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            <Grid className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] tracking-wide">Categories</span>
-          </button>
-
-          {/* Settings Tab */}
-          <button
-            onClick={() => setActiveTab('Settings')}
-            className={`flex flex-col items-center justify-center py-1.5 px-4 rounded-full transition-all duration-200 cursor-pointer ${
-              activeTab === 'Settings'
-                ? 'bg-secondary-container text-on-secondary-container font-semibold scale-105'
-                : 'text-on-surface-variant hover:text-on-surface'
-            }`}
-          >
-            <SettingsIcon className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] tracking-wide">Settings</span>
-          </button>
+          {[
+            { tab: 'All Tasks' as const, icon: <ListTodo className="w-5 h-5 mb-0.5" /> },
+            { tab: 'Calendar' as const, icon: <Calendar className="w-5 h-5 mb-0.5" /> },
+            { tab: 'Categories' as const, icon: <Grid className="w-5 h-5 mb-0.5" /> },
+            { tab: 'Settings' as const, icon: <SettingsIcon className="w-5 h-5 mb-0.5" /> }
+          ].map((item) => (
+            <button
+              key={item.tab}
+              onClick={() => setActiveTab(item.tab)}
+              className={`flex flex-col items-center justify-center py-1.5 px-4 rounded-full transition-all duration-200 cursor-pointer ${
+                activeTab === item.tab
+                  ? 'bg-secondary-container text-on-secondary-container font-semibold scale-105'
+                  : 'text-on-surface-variant hover:text-on-surface'
+              }`}
+            >
+              {item.icon}
+              <span className="text-[10px] tracking-wide">{tabLabel[item.tab]}</span>
+            </button>
+          ))}
         </nav>
 
-        {/* Create / Edit Modal Sheet */}
         <NewTaskModal
           isOpen={isModalOpen}
           taskToEdit={editingTask}
@@ -533,7 +445,6 @@ export default function App() {
         />
       </div>
 
-      {/* Dopamine Celebration Modal Sheet */}
       <AnimatePresence>
         {showCelebration && (
           <motion.div
@@ -549,7 +460,6 @@ export default function App() {
               transition={{ type: 'spring', damping: 15 }}
               className="bg-gradient-to-br from-indigo-900 via-purple-950 to-pink-900 border border-purple-500/30 p-8 rounded-3xl text-center max-w-sm w-full shadow-[0_0_30px_rgba(168,85,247,0.4)] relative overflow-hidden"
             >
-              {/* Animated Floating Confetti Shapes */}
               <div className="absolute inset-0 pointer-events-none">
                 {[...Array(12)].map((_, i) => (
                   <motion.div
@@ -566,11 +476,7 @@ export default function App() {
                       scale: [1, 1.5, 0.8],
                       opacity: [0, 1, 0]
                     }}
-                    transition={{
-                      duration: 2.5,
-                      repeat: Infinity,
-                      delay: i * 0.15
-                    }}
+                    transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.15 }}
                   />
                 ))}
               </div>
@@ -586,20 +492,20 @@ export default function App() {
 
                 <div>
                   <span className="inline-block py-1 px-3 bg-white/10 rounded-full text-[10px] uppercase font-black text-amber-300 tracking-wider">
-                    COMPLETED ACHIEVEMENT! 🎉
+                    완료 업적 달성!
                   </span>
                   <h3 className="text-xl font-black text-white tracking-tight mt-2.5 truncate max-w-full">
                     {celebratedTaskTitle}
                   </h3>
-                  <p className="text-xs text-indigo-200 mt-1 font-semibold">도파민 분출! 일정을 깔끔하게 매듭지었습니다.</p>
+                  <p className="text-xs text-indigo-200 mt-1 font-semibold">멋지게 해냈어요. 오늘의 흐름이 더 좋아졌습니다.</p>
                 </div>
 
                 <div className="bg-white/5 rounded-2xl p-4 border border-white/5 space-y-2">
                   <div className="flex items-center justify-between text-xs font-bold text-slate-300">
                     <span className="flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-yellow-400" /> Dopamine Reward
+                      <Sparkles className="w-3.5 h-3.5 text-yellow-400" /> 보상
                     </span>
-                    <span className="text-yellow-400 font-extrabold">+100 XP ⭐</span>
+                    <span className="text-yellow-400 font-extrabold">+100 XP</span>
                   </div>
                   <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
                     <motion.div
@@ -609,13 +515,11 @@ export default function App() {
                       className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 h-full"
                     />
                   </div>
-                  <p className="text-[10px] text-purple-300 font-bold">
-                    오늘의 완료율이 극적으로 상승하였습니다!
-                  </p>
+                  <p className="text-[10px] text-purple-300 font-bold">오늘의 완료 습관이 기록되었습니다.</p>
                 </div>
 
                 <div className="text-[10px] text-slate-400 font-bold animate-pulse">
-                  축하 모드는 3.8초 후 자동으로 종료됩니다
+                  축하 화면은 잠시 후 자동으로 닫힙니다.
                 </div>
               </div>
             </motion.div>
