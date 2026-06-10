@@ -47,28 +47,28 @@ export default function CalendarView({
   const selectedTasks = tasks.filter((task) => task.dueDateValue === selectedDate);
 
   return (
-    <div className="space-y-5 pb-8">
-      <header className="sticky top-0 z-30 flex items-center justify-between bg-slate-50/90 py-4 backdrop-blur dark:bg-slate-900/90">
-        <div>
+    <div className="space-y-4 pb-8">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-3 bg-slate-50/90 py-3 backdrop-blur dark:bg-slate-900/90">
+        <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-widest text-indigo-600">Calendar Room</p>
-          <h1 className="text-2xl font-black tracking-tight">캘린더</h1>
+          <h1 className="text-xl font-black tracking-tight">캘린더</h1>
         </div>
         <button
           onClick={() => onOpenNewTaskModalWithDate(selectedDate)}
-          className="flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700"
+          className="flex h-12 shrink-0 items-center gap-2 rounded-lg bg-indigo-600 px-3 text-sm font-bold text-white hover:bg-indigo-700"
         >
           <Plus className="h-4 w-4" />
           일정
         </button>
       </header>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-        <div className="mb-4 flex items-center justify-between">
-          <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))} className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-700" title="이전 달">
+      <section className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="mb-3 flex items-center justify-between">
+          <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))} className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" title="이전 달">
             <ChevronLeft className="h-5 w-5" />
           </button>
           <h2 className="text-lg font-black">{year}년 {month + 1}월</h2>
-          <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))} className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-700" title="다음 달">
+          <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))} className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" title="다음 달">
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
@@ -79,7 +79,7 @@ export default function CalendarView({
 
         <div className="grid grid-cols-7 gap-1">
           {cells.map((dateStr, index) => {
-            if (!dateStr) return <div key={`empty-${index}`} className="min-h-20" />;
+            if (!dateStr) return <div key={`empty-${index}`} className="min-h-14" />;
             const dayTasks = tasks.filter((task) => task.dueDateValue === dateStr);
             const isSelected = selectedDate === dateStr;
             const isRoomDate = room.date === dateStr;
@@ -88,29 +88,29 @@ export default function CalendarView({
               <button
                 key={dateStr}
                 onClick={() => setSelectedDate(dateStr)}
-                className={`min-h-20 rounded-lg border p-2 text-left transition ${
+                className={`min-h-14 rounded-lg border p-1.5 text-left transition ${
                   isSelected
                     ? 'border-indigo-600 bg-indigo-50 ring-2 ring-indigo-100 dark:bg-indigo-950'
                     : 'border-slate-200 bg-slate-50 hover:bg-white dark:border-slate-700 dark:bg-slate-900'
                 }`}
               >
                 <span className="text-sm font-black">{Number(dateStr.slice(-2))}</span>
-                {isRoomDate && <span className="mt-1 block rounded bg-emerald-100 px-1 py-0.5 text-[10px] font-bold text-emerald-700">현재 방</span>}
-                {dayTasks.length > 0 && <span className="mt-1 block rounded bg-amber-100 px-1 py-0.5 text-[10px] font-bold text-amber-700">{dayTasks.length}개</span>}
+                {isRoomDate && <span className="mt-1 block rounded bg-emerald-100 px-1 py-0.5 text-[9px] font-bold text-emerald-700">현재 방</span>}
+                {dayTasks.length > 0 && <span className="mt-1 block rounded bg-amber-100 px-1 py-0.5 text-[9px] font-bold text-amber-700">{dayTasks.length}개</span>}
               </button>
             );
           })}
         </div>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
-        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <section className="grid gap-4">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <CalendarDays className="h-6 w-6 text-indigo-600" />
           <h2 className="mt-3 text-lg font-black">{selectedDate}</h2>
-          <p className="mt-2 text-sm text-slate-500">선택한 날짜를 기준으로 새 협업방을 만들 수 있습니다.</p>
+          <p className="mt-2 text-sm text-slate-500">선택한 날짜를 기준으로 새 작업방을 만들 수 있습니다.</p>
           <button
             onClick={() => onCreateRoomFromDate(selectedDate)}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm font-black text-indigo-700 hover:bg-indigo-100"
+            className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm font-black text-indigo-700 hover:bg-indigo-100"
           >
             <UsersRound className="h-4 w-4" />
             이 날짜로 방 생성
@@ -118,9 +118,9 @@ export default function CalendarView({
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <h2 className="text-lg font-black">선택 날짜 할 일</h2>
-            <span className="text-xs font-bold text-slate-500">{selectedTasks.length}개</span>
+            <span className="shrink-0 text-xs font-bold text-slate-500">{selectedTasks.length}개</span>
           </div>
 
           {selectedTasks.length > 0 ? (

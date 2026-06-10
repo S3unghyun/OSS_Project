@@ -27,13 +27,13 @@ export default function CategoriesView({ tasks, users, onToggleStatus, onStatusC
   const filteredTasks = selectedCategory === 'All' ? tasks : tasks.filter((task) => task.category === selectedCategory);
 
   return (
-    <div className="space-y-5 pb-8">
-      <header className="sticky top-0 z-30 bg-slate-50/90 py-4 backdrop-blur dark:bg-slate-900/90">
+    <div className="space-y-4 pb-8">
+      <header className="sticky top-0 z-30 bg-slate-50/90 py-3 backdrop-blur dark:bg-slate-900/90">
         <p className="text-xs font-bold uppercase tracking-widest text-indigo-600">Category Board</p>
-        <h1 className="text-2xl font-black tracking-tight">분류별 할 일</h1>
+        <h1 className="text-xl font-black tracking-tight">분류별 할 일</h1>
       </header>
 
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3">
         {categories.map((category) => {
           const categoryTasks = tasks.filter((task) => task.category === category);
           const completed = categoryTasks.filter((task) => task.status === 'Completed').length;
@@ -45,14 +45,14 @@ export default function CategoriesView({ tasks, users, onToggleStatus, onStatusC
             <button
               key={category}
               onClick={() => setSelectedCategory(isSelected ? 'All' : category)}
-              className={`rounded-lg border p-4 text-left shadow-sm transition ${
+              className={`min-h-36 rounded-lg border p-3 text-left shadow-sm transition ${
                 isSelected
                   ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100 dark:bg-indigo-950'
                   : 'border-slate-200 bg-white hover:border-indigo-200 dark:border-slate-700 dark:bg-slate-800'
               }`}
             >
               <span className={`inline-flex rounded-lg p-2 ${categoryMeta[category].tone}`}>{categoryMeta[category].icon}</span>
-              <h2 className="mt-3 text-base font-black">{categoryMeta[category].label}</h2>
+              <h2 className="mt-3 break-words text-sm font-black">{categoryMeta[category].label}</h2>
               <p className="mt-1 text-xs font-semibold text-slate-500">{categoryTasks.length}개 · 총 {score}점</p>
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
                 <div className="h-full rounded-full bg-indigo-600" style={{ width: `${rate}%` }} />
@@ -64,15 +64,15 @@ export default function CategoriesView({ tasks, users, onToggleStatus, onStatusC
       </section>
 
       <section className="space-y-3">
-        <div className="flex items-end justify-between">
-          <div>
+        <div className="flex items-end justify-between gap-3">
+          <div className="min-w-0">
             <h2 className="text-lg font-black">
               {selectedCategory === 'All' ? '전체 목록' : `${categoryMeta[selectedCategory].label} 목록`}
             </h2>
-            <p className="text-sm text-slate-500">담당자, 마감일, 완료 증빙을 함께 확인합니다.</p>
+            <p className="text-sm text-slate-500">해당 분류의 마감과 완료 증빙을 확인합니다.</p>
           </div>
           {selectedCategory !== 'All' && (
-            <button onClick={() => setSelectedCategory('All')} className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold hover:bg-white dark:border-slate-700">
+            <button onClick={() => setSelectedCategory('All')} className="min-h-11 shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold hover:bg-white dark:border-slate-700">
               전체 보기
             </button>
           )}
@@ -94,7 +94,7 @@ export default function CategoriesView({ tasks, users, onToggleStatus, onStatusC
             ))}
           </div>
         ) : (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center dark:border-slate-700 dark:bg-slate-800">
+          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-800">
             <ListTodo className="mx-auto h-10 w-10 text-slate-300" />
             <p className="mt-3 text-sm font-bold text-slate-500">표시할 할 일이 없습니다.</p>
           </div>

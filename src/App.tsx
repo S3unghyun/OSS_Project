@@ -21,7 +21,7 @@ const CURRENT_USER_ID = 'u-host';
 
 const INITIAL_ROOM: Room = {
   id: 'room-1',
-  name: 'OSS 프로젝트 발표 준비방',
+  name: 'OSS_GROUP_TODO-LIST',
   date: CURRENT_DATE_STR,
   hostId: CURRENT_USER_ID,
   inviteCode: 'https://todo-room.app/invite/OSS-TEAM-610',
@@ -36,7 +36,7 @@ const INITIAL_TASKS: Task[] = [
   {
     id: 'task-1',
     roomId: 'room-1',
-    title: '캘린더 방 생성 플로우 정리',
+    title: '캘린더 기반 생성 플로우 정리',
     priority: 'High',
     category: 'Team Project',
     status: 'Completed',
@@ -47,7 +47,7 @@ const INITIAL_TASKS: Task[] = [
     assigneeId: 'u-mina',
     completedById: 'u-mina',
     completedAt: Date.now() - 7200000,
-    completionNote: '초대 링크 화면까지 검토 완료',
+    completionNote: '초대 링크 화면까지 검수 완료',
     postponeCount: 0
   },
   {
@@ -90,7 +90,7 @@ const INITIAL_SETTINGS: AppSettings = {
 
 const tabLabel: Record<TabType, string> = {
   'All Tasks': '할 일',
-  Calendar: '캘린더',
+  Calendar: '달력',
   Categories: '분류',
   Settings: '설정'
 };
@@ -291,7 +291,7 @@ export default function App() {
       ...INITIAL_ROOM,
       id: `room-${Date.now()}`,
       date: dateStr,
-      name: `${dateStr} 협업방`,
+      name: `${dateStr} 작업방`,
       inviteCode: `https://todo-room.app/invite/${Math.random().toString(36).slice(2, 9).toUpperCase()}`
     };
     setRoom(nextRoom);
@@ -322,7 +322,7 @@ export default function App() {
 
   return (
     <div className={`min-h-screen font-sans transition-colors ${settings.darkMode ? 'bg-slate-900 text-slate-50' : 'bg-slate-50 text-slate-950'}`}>
-      <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 pb-24 pt-3 sm:px-6">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-3 pb-24 pt-2 sm:px-4">
         <main className="flex-1">
           {activeTab === 'All Tasks' && (
             <AllTasksView
@@ -375,7 +375,7 @@ export default function App() {
           )}
         </main>
 
-        <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto flex max-w-5xl items-center justify-around border-t border-slate-200 bg-white/95 px-3 py-3 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
+        <nav className="fixed bottom-0 left-0 right-0 z-40 mx-auto flex w-full max-w-md items-center justify-around border-t border-slate-200 bg-white/95 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
           {[
             { tab: 'All Tasks' as const, icon: <ListTodo className="h-5 w-5" /> },
             { tab: 'Calendar' as const, icon: <Calendar className="h-5 w-5" /> },
@@ -385,7 +385,7 @@ export default function App() {
             <button
               key={item.tab}
               onClick={() => setActiveTab(item.tab)}
-              className={`flex min-w-16 flex-col items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold transition ${
+              className={`flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-lg px-2 py-2 text-[11px] font-bold transition ${
                 activeTab === item.tab ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
