@@ -7,13 +7,15 @@ interface NewTaskModalProps {
   onClose: () => void;
   onSave: (taskData: Omit<Task, 'id'> & { id?: string }) => void;
   taskToEdit?: Task | null;
+  defaultDueDateValue?: string;
 }
 
-export default function NewTaskModal({ isOpen, onClose, onSave, taskToEdit }: NewTaskModalProps) {
+export default function NewTaskModal({ isOpen, onClose, onSave, taskToEdit, defaultDueDateValue }: NewTaskModalProps) {
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<Task['priority']>('High');
   const [category, setCategory] = useState<Task['category']>('Study');
   const [dueDate, setDueDate] = useState('Tomorrow, 10:00 AM');
+  const [dueDateValue, setDueDateValue] = useState('2026-06-08');
 
   // Trigger values prefill when editing
   useEffect(() => {
@@ -22,14 +24,25 @@ export default function NewTaskModal({ isOpen, onClose, onSave, taskToEdit }: Ne
       setPriority(taskToEdit.priority);
       setCategory(taskToEdit.category);
       setDueDate(taskToEdit.dueDate || 'Tomorrow, 10:00 AM');
+      setDueDateValue(taskToEdit.dueDateValue || '2026-06-08');
     } else {
       // Clear for new task
       setTitle('');
       setPriority('High');
       setCategory('Study');
-      setDueDate('Tomorrow, 10:00 AM');
+      
+      let dateDesc = 'Tomorrow, 10:00 AM';
+      if (defaultDueDateValue) {
+        if (defaultDueDateValue === '2026-06-08') {
+          dateDesc = 'Today, 6:00 PM';
+        } else {
+          dateDesc = `${defaultDueDateValue} 18:00`;
+        }
+      }
+      setDueDate(dateDesc);
+      setDueDateValue(defaultDueDateValue || '2026-06-08');
     }
-  }, [taskToEdit, isOpen]);
+  }, [taskToEdit, isOpen, defaultDueDateValue]);
 
   if (!isOpen) return null;
 
@@ -43,8 +56,9 @@ export default function NewTaskModal({ isOpen, onClose, onSave, taskToEdit }: Ne
       priority,
       category,
       dueDate,
+      dueDateValue,
       status: taskToEdit ? taskToEdit.status : 'To Do'
-    });
+    } as any);
     onClose();
   };
 
@@ -206,19 +220,34 @@ export default function NewTaskModal({ isOpen, onClose, onSave, taskToEdit }: Ne
           </div>
 
           {/* DUE DATE Field */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-outline uppercase tracking-wider block">
-              DUE DATE
-            </label>
-            <div className="relative group/input">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-outline uppercase tracking-wider block">
+                DUE DATE DESCRIPTION (READABLE STRING)
+              </label>
+              <div className="relative group/input">
+                <input
+                  type="text"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  placeholder="Tomorrow, 10:00 AM"
+                  className="w-full bg-slate-100 placeholder:text-outline border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all text-on-surface"
+                />
+                <Calendar className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-outline group-hover/input:text-primary transition-colors pointer-events-none" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-outline uppercase tracking-wider block">
+                DUE DATE VALUE (STANDARD CALENDAR FOR SORTING)
+              </label>
               <input
-                type="text"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                placeholder="Tomorrow, 10:00 AM"
-                className="w-full bg-slate-100 placeholder:text-outline border-none rounded-xl px-4 py-4 focus:ring-2 focus:ring-primary outline-none text-base font-medium transition-all text-on-surface"
+                type="date"
+                value={dueDateValue}
+                onChange={(e) => setDueDateValue(e.target.value)}
+                required
+                className="w-full bg-slate-100 border-none rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-primary outline-none text-sm font-semibold transition-all text-on-surface"
               />
-              <Calendar className="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2 text-outline group-hover/input:text-primary transition-colors pointer-events-none" />
             </div>
           </div>
 
