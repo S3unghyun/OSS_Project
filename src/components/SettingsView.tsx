@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { ListTodo, Plus, TrendingUp, Briefcase, User, Moon, Sun, Bell, ChevronRight, CloudLightning, Trash2, CheckCircle } from 'lucide-react';
-import { Task, AppSettings } from '../types';
+import { Bell, CheckCircle, CloudLightning, Database, Moon, Plus, Sun, Trash2, UsersRound } from 'lucide-react';
+import { AppSettings, Contribution, Room, Task, User } from '../types';
 
 interface SettingsViewProps {
   tasks: Task[];
+  room: Room;
+  users: User[];
   settings: AppSettings;
+  contributions: Contribution[];
   onSettingsChange: (settings: AppSettings) => void;
   onClearData: () => void;
   onSync: () => void;
@@ -13,7 +16,10 @@ interface SettingsViewProps {
 
 export default function SettingsView({
   tasks,
+  room,
+  users,
   settings,
+  contributions,
   onSettingsChange,
   onClearData,
   onSync,
@@ -21,212 +27,134 @@ export default function SettingsView({
 }: SettingsViewProps) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncDone, setSyncDone] = useState(false);
-
-  const realCompletedCount = tasks.filter((t) => t.status === 'Completed').length;
-  const totalCompletedCount = 124 + realCompletedCount;
-  const workCompleted = 39 + tasks.filter((t) => t.category === 'Work' && t.status === 'Completed').length;
-  const personalCompleted = 26 + tasks.filter((t) => t.category === 'Personal' && t.status === 'Completed').length;
-  const totalPossible = totalCompletedCount + tasks.filter((t) => t.status !== 'Completed').length;
-  const baseRate = totalPossible > 0 ? Math.round((totalCompletedCount / totalPossible) * 100) : 75;
-
-  const strokeRadius = 32;
-  const strokeCircumference = 2 * Math.PI * strokeRadius;
-  const strokeOffset = strokeCircumference - (strokeCircumference * (baseRate / 100));
-
-  const handleDarkToggle = () => {
-    onSettingsChange({
-      ...settings,
-      darkMode: !settings.darkMode
-    });
-  };
-
-  const handleNotificationToggle = () => {
-    onSettingsChange({
-      ...settings,
-      notifications: !settings.notifications
-    });
-  };
+  const completed = tasks.filter((task) => task.status === 'Completed').length;
+  const totalScore = tasks.filter((task) => task.status === 'Completed').reduce((sum, task) => sum + task.weight, 0);
 
   const triggerMockSync = () => {
     setIsSyncing(true);
     setSyncDone(false);
-    setTimeout(() => {
+    window.setTimeout(() => {
+      onSync();
       setIsSyncing(false);
       setSyncDone(true);
-      onSync();
-      setTimeout(() => setSyncDone(false), 3000);
-    }, 1200);
+      window.setTimeout(() => setSyncDone(false), 2500);
+    }, 700);
   };
 
   return (
-    <div className="space-y-6 pb-28">
-      <header className="sticky top-0 z-30 flex justify-between items-center bg-surface-bg/85 backdrop-blur-md py-4 w-full">
-        <div className="flex items-center gap-3">
-          <div className="bg-primary/10 p-2 rounded-xl text-primary">
-            <ListTodo className="w-6 h-6 stroke-[2.5]" />
-          </div>
-          <h1 className="text-xl font-bold text-primary tracking-tight">설정</h1>
+    <div className="space-y-5 pb-8">
+      <header className="sticky top-0 z-30 flex items-center justify-between bg-slate-50/90 py-4 backdrop-blur dark:bg-slate-900/90">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-indigo-600">Workspace Settings</p>
+          <h1 className="text-2xl font-black tracking-tight">설정</h1>
         </div>
-        <button
-          onClick={onOpenNewTaskModal}
-          className="text-on-surface-variant hover:text-primary transition-all p-2 hover:bg-surface-container rounded-xl active:scale-90 duration-200"
-          title="새 할 일 만들기"
-        >
-          <Plus className="w-5 h-5 stroke-[2.5]" />
+        <button onClick={onOpenNewTaskModal} className="rounded-lg bg-indigo-600 p-3 text-white hover:bg-indigo-700" title="새 할 일">
+          <Plus className="h-5 w-5" />
         </button>
       </header>
 
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold text-on-surface tracking-tight">통계</h2>
-        
-        <div className="grid grid-cols-2 gap-3">
-          <div className="col-span-2 p-5 bg-surface-container-lowest rounded-2xl border border-outline-variant/30 shadow-[0px_4px_12px_rgba(0,0,0,0.03)] flex justify-between items-end">
-            <div>
-              <p className="text-[10px] font-bold text-outline uppercase tracking-widest">전체 완료</p>
-              <h3 className="text-3xl font-extrabold text-primary tracking-tight mt-1">{totalCompletedCount}</h3>
-              <p className="text-xs text-success-emerald font-semibold flex items-center gap-1 mt-1">
-                <TrendingUp className="w-3.5 h-3.5" />
-                이번 주 12% 증가
-              </p>
-            </div>
-
-            <div className="relative w-20 h-20 flex items-center justify-center flex-shrink-0">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle className="text-surface-container stroke-current" cx="40" cy="40" fill="transparent" r={strokeRadius} strokeWidth="6" />
-                <circle
-                  className="text-primary stroke-current transition-all duration-700 ease-out"
-                  cx="40"
-                  cy="40"
-                  fill="transparent"
-                  r={strokeRadius}
-                  strokeDasharray={strokeCircumference}
-                  strokeDashoffset={strokeOffset}
-                  strokeLinecap="round"
-                  strokeWidth="6"
-                />
-              </svg>
-              <div className="absolute font-bold text-xs text-on-surface">{baseRate}%</div>
-            </div>
-          </div>
-
-          <div className="p-4 bg-surface-container-low rounded-xl border border-outline-variant/20 flex flex-col gap-2 shadow-[0px_2px_8px_rgba(0,0,0,0.01)]">
-            <div className="flex items-center justify-between">
-              <Briefcase className="w-4 h-4 text-warning-amber" />
-              <span className="text-xs font-bold text-on-surface-variant">{workCompleted}</span>
-            </div>
-            <p className="text-xs font-bold text-on-surface">업무</p>
-            <div className="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
-              <div className="bg-warning-amber h-full" style={{ width: '60%' }}></div>
-            </div>
-          </div>
-
-          <div className="p-4 bg-surface-container-low rounded-xl border border-outline-variant/20 flex flex-col gap-2 shadow-[0px_2px_8px_rgba(0,0,0,0.01)]">
-            <div className="flex items-center justify-between">
-              <User className="w-4 h-4 text-success-emerald" />
-              <span className="text-xs font-bold text-on-surface-variant">{personalCompleted}</span>
-            </div>
-            <p className="text-xs font-bold text-on-surface">개인</p>
-            <div className="w-full bg-surface-container-highest h-1 rounded-full overflow-hidden">
-              <div className="bg-success-emerald h-full" style={{ width: '45%' }}></div>
-            </div>
-          </div>
+      <section className="grid gap-4 lg:grid-cols-3">
+        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <Database className="h-6 w-6 text-indigo-600" />
+          <p className="mt-4 text-sm font-bold text-slate-500">완료된 할 일</p>
+          <h2 className="mt-1 text-3xl font-black">{completed}/{tasks.length}</h2>
+        </div>
+        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <CheckCircle className="h-6 w-6 text-emerald-600" />
+          <p className="mt-4 text-sm font-bold text-slate-500">누적 기여 점수</p>
+          <h2 className="mt-1 text-3xl font-black">{totalScore}</h2>
+        </div>
+        <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <UsersRound className="h-6 w-6 text-amber-600" />
+          <p className="mt-4 text-sm font-bold text-slate-500">방 멤버</p>
+          <h2 className="mt-1 text-3xl font-black">{room.members.length}</h2>
         </div>
       </section>
 
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold text-on-surface tracking-tight">환경설정</h2>
-        
-        <div className="bg-surface-container-lowest rounded-2xl shadow-[0px_4px_12px_rgba(0,0,0,0.03)] border border-outline-variant/20 divide-y divide-outline-variant/15 overflow-hidden">
-          <div className="flex items-center justify-between p-4 transition-colors hover:bg-surface-container-lowest/70">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 flex items-center justify-center bg-surface-container rounded-xl text-on-surface-variant">
-                {settings.darkMode ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-warning-amber" />}
+      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <h2 className="text-lg font-black">멤버별 기여도</h2>
+        <div className="mt-4 space-y-3">
+          {contributions.map((contribution) => {
+            const user = users.find((item) => item.id === contribution.userId);
+            return (
+              <div key={contribution.userId} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 dark:bg-slate-900">
+                <div>
+                  <p className="text-sm font-black">{user?.name}</p>
+                  <p className="text-xs text-slate-500">{contribution.completedCount}개 완료</p>
+                </div>
+                <p className="text-sm font-black text-indigo-700">{contribution.score}점 · {contribution.percentage}%</p>
               </div>
-              <div>
-                <p className="text-sm font-bold text-on-surface">다크 모드</p>
-                <p className="text-[11px] text-outline font-medium">앱 화면 테마를 조정합니다</p>
-              </div>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" checked={settings.darkMode} onChange={handleDarkToggle} className="sr-only peer" />
-              <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-            </label>
-          </div>
+            );
+          })}
+        </div>
+      </section>
 
-          <button onClick={handleNotificationToggle} className="w-full flex items-center justify-between p-4 transition-colors hover:bg-surface-container-low/40">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 flex items-center justify-center bg-surface-container rounded-xl text-on-surface-variant">
-                <Bell className={`w-5 h-5 ${settings.notifications ? 'text-primary' : ''}`} />
-              </div>
-              <div className="text-left font-sans">
-                <p className="text-sm font-bold text-on-surface">알림</p>
-                <p className="text-[11px] text-outline font-medium">
-                  {settings.notifications ? '켜짐' : '꺼짐'} · 푸시, 이메일, 리마인더
-                </p>
-              </div>
+      <section className="rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-slate-100 p-2 dark:bg-slate-900">
+              {settings.darkMode ? <Moon className="h-5 w-5 text-indigo-600" /> : <Sun className="h-5 w-5 text-amber-600" />}
             </div>
-            <ChevronRight className="w-4 h-4 text-outline" />
+            <div>
+              <p className="text-sm font-black">다크 모드</p>
+              <p className="text-xs text-slate-500">작업 화면의 색상을 전환합니다.</p>
+            </div>
+          </div>
+          <input
+            type="checkbox"
+            checked={settings.darkMode}
+            onChange={() => onSettingsChange({ ...settings, darkMode: !settings.darkMode })}
+            className="h-5 w-5 accent-indigo-600"
+          />
+        </div>
+
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-slate-100 p-2 dark:bg-slate-900">
+              <Bell className="h-5 w-5 text-indigo-600" />
+            </div>
+            <div>
+              <p className="text-sm font-black">알림</p>
+              <p className="text-xs text-slate-500">초대, 마감, 완료 업데이트를 받습니다.</p>
+            </div>
+          </div>
+          <input
+            type="checkbox"
+            checked={settings.notifications}
+            onChange={() => onSettingsChange({ ...settings, notifications: !settings.notifications })}
+            className="h-5 w-5 accent-indigo-600"
+          />
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <h2 className="text-lg font-black">데이터 관리</h2>
+        <p className="mt-2 text-sm text-slate-500">현재 구현은 API 연동 전 로컬스토리지에 저장되며, 아래 동기화 버튼은 저장소 반영을 즉시 실행합니다.</p>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <button
+            onClick={triggerMockSync}
+            disabled={isSyncing}
+            className="flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-3 text-sm font-black text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200"
+          >
+            {isSyncing ? (
+              '동기화 중...'
+            ) : syncDone ? (
+              <>
+                <CheckCircle className="h-4 w-4 text-emerald-600" />
+                동기화 완료
+              </>
+            ) : (
+              <>
+                <CloudLightning className="h-4 w-4" />
+                지금 동기화
+              </>
+            )}
           </button>
 
-          <div className="w-full flex items-center justify-between p-4 transition-colors">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 flex items-center justify-center bg-surface-container rounded-xl overflow-hidden shadow-sm">
-                <img alt="계정 프로필 사진" src={settings.accountAvatar} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-on-surface">{settings.accountName}</p>
-                <span className="text-[10px] font-bold uppercase py-0.5 px-2 rounded bg-gradient-to-r from-primary to-primary-container text-white">
-                  {settings.accountPlan}
-                </span>
-              </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-outline" />
-          </div>
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <h2 className="text-lg font-bold text-on-surface tracking-tight">데이터 관리</h2>
-        
-        <div className="bg-surface-container-lowest rounded-2xl shadow-[0px_4px_12px_rgba(0,0,0,0.03)] border border-outline-variant/20 p-4 space-y-4">
-          <p className="text-xs text-outline leading-relaxed font-medium">
-            로컬 저장소와 동기화를 관리합니다. 이 영역의 작업은 되돌릴 수 없습니다.
-          </p>
-
-          <div className="flex flex-col gap-2.5">
-            <button
-              onClick={triggerMockSync}
-              disabled={isSyncing}
-              className={`flex items-center justify-center gap-2 w-full py-3 px-4 border border-outline text-outline font-bold text-xs rounded-xl transition-all duration-200 cursor-pointer ${
-                isSyncing ? 'opacity-50 cursor-wait' : 'hover:bg-surface-container-low active:scale-95'
-              }`}
-            >
-              {isSyncing ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-outline border-t-transparent rounded-full animate-spin"></div>
-                  데이터베이스 동기화 중...
-                </>
-              ) : syncDone ? (
-                <>
-                  <CheckCircle className="w-4 h-4 text-success-emerald" />
-                  동기화 완료
-                </>
-              ) : (
-                <>
-                  <CloudLightning className="w-4 h-4" />
-                  지금 동기화
-                </>
-              )}
-            </button>
-
-            <button
-              onClick={onClearData}
-              className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-danger-container text-on-danger-container font-bold text-xs rounded-xl hover:opacity-95 transition-all duration-200 active:scale-95 cursor-pointer"
-            >
-              <Trash2 className="w-4 h-4" />
-              모든 데이터 삭제
-            </button>
-          </div>
+          <button onClick={onClearData} className="flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-4 py-3 text-sm font-black text-white hover:bg-rose-700">
+            <Trash2 className="h-4 w-4" />
+            방 데이터 삭제
+          </button>
         </div>
       </section>
     </div>

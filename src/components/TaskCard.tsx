@@ -1,10 +1,11 @@
 import React from 'react';
-import { Check, Edit2, Trash2, Briefcase, User, GraduationCap, Users, Calendar, Clock, Flame } from 'lucide-react';
-import { Task } from '../types';
+import { Calendar, Check, Download, Edit2, FileText, Flag, Paperclip, Trash2, UserRound } from 'lucide-react';
+import { Task, User } from '../types';
 
 interface TaskCardProps {
   key?: string;
   task: Task;
+  users: User[];
   onToggleStatus: (id: string) => void;
   onStatusChange: (id: string, status: Task['status']) => void;
   onEdit: (task: Task) => void;
@@ -21,165 +22,108 @@ const priorityLabel: Record<Task['priority'], string> = {
 const categoryLabel: Record<Task['category'], string> = {
   Work: '업무',
   Personal: '개인',
-  Study: '공부',
+  Study: '학습',
   'Team Project': '팀 프로젝트'
 };
 
-export default function TaskCard({
-  task,
-  onToggleStatus,
-  onStatusChange,
-  onEdit,
-  onDelete,
-  onPostpone
-}: TaskCardProps) {
+const statusLabel: Record<Task['status'], string> = {
+  'To Do': '예정',
+  'In Progress': '진행 중',
+  Completed: '완료'
+};
+
+const getUserName = (users: User[], userId?: string) => users.find((user) => user.id === userId)?.name || '미지정';
+
+export default function TaskCard({ task, users, onToggleStatus, onStatusChange, onEdit, onDelete, onPostpone }: TaskCardProps) {
   const isCompleted = task.status === 'Completed';
-  const postpones = task.postponeCount || 0;
-
-  const getCategoryIcon = (cat: Task['category']) => {
-    switch (cat) {
-      case 'Work':
-        return <Briefcase className="w-3.5 h-3.5" />;
-      case 'Personal':
-        return <User className="w-3.5 h-3.5" />;
-      case 'Study':
-        return <GraduationCap className="w-3.5 h-3.5" />;
-      case 'Team Project':
-        return <Users className="w-3.5 h-3.5" />;
-      default:
-        return <Briefcase className="w-3.5 h-3.5" />;
-    }
-  };
-
-  const getPriorityClasses = (prio: Task['priority']) => {
-    switch (prio) {
-      case 'High':
-        return 'bg-danger-container text-on-danger-container border-danger-container';
-      case 'Medium':
-        return 'bg-warning-container text-on-warning-container border-warning-container';
-      case 'Low':
-        return 'bg-surface-container-highest text-on-surface-variant border-surface-container-highest';
-      default:
-        return 'bg-surface-container-highest text-on-surface-variant border-surface-container';
-    }
-  };
-
-  let postponeStyles = 'border-outline-variant/10';
-  if (!isCompleted) {
-    if (postpones === 1) {
-      postponeStyles = 'border-amber-500 dark:border-amber-500/80 shadow-[0_0_10px_rgba(245,158,11,0.25)] ring-1 ring-amber-500/10';
-    } else if (postpones >= 2) {
-      postponeStyles = 'border-red-500 dark:border-red-500/80 shadow-[0_0_15px_rgba(239,68,68,0.6)] ring-2 ring-red-500/50 animate-[pulse_1.2s_infinite] bg-red-50/5 dark:bg-red-950/5';
-    }
-  }
+  const creator = getUserName(users, task.createdById);
+  const assignee = getUserName(users, task.assigneeId);
+  const completedBy = getUserName(users, task.completedById);
 
   return (
-    <div
-      className={`fade-in bg-surface-container-lowest p-4 rounded-xl flex items-start gap-4 border shadow-[0px_4px_12px_rgba(0,0,0,0.02)] transition-all duration-200 hover:shadow-[0px_6px_16px_rgba(48,47,57,0.04)] ${postponeStyles} ${
-        isCompleted ? 'opacity-60 shadow-none' : ''
-      }`}
-    >
-      <div className="mt-1 flex-shrink-0">
+    <article className={`rounded-lg border bg-white p-4 shadow-sm transition dark:border-slate-700 dark:bg-slate-800 ${isCompleted ? 'border-emerald-200' : 'border-slate-200'}`}>
+      <div className="flex gap-3">
         <button
           onClick={() => onToggleStatus(task.id)}
-          className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
-            isCompleted
-              ? 'bg-primary border-primary text-white scale-100'
-              : 'border-outline hover:border-primary-container hover:scale-105'
+          className={`mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-2 transition ${
+            isCompleted ? 'border-emerald-600 bg-emerald-600 text-white' : 'border-slate-300 hover:border-indigo-500'
           }`}
-          aria-label="완료 상태 전환"
+          aria-label="완료 상태 변경"
         >
-          {isCompleted && <Check className="w-4 h-4 stroke-[3]" />}
+          {isCompleted && <Check className="h-4 w-4 stroke-[3]" />}
         </button>
-      </div>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {postpones >= 2 && !isCompleted && (
-            <Flame className="w-4.5 h-4.5 text-red-500 fill-red-500 animate-[bounce_1s_infinite] shrink-0" />
-          )}
-          <h4
-            className={`text-base font-semibold text-on-surface leading-tight transition-all truncate ${
-              isCompleted ? 'line-through text-on-surface-variant/70' : ''
-            }`}
-          >
-            {task.title}
-          </h4>
-        </div>
-        
-        <div className="flex flex-wrap gap-2 mt-2 items-center">
-          <span
-            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${getPriorityClasses(
-              task.priority
-            )}`}
-          >
-            {priorityLabel[task.priority]}
-          </span>
-
-          <div className="flex items-center gap-1 text-on-surface-variant text-[11px] font-medium py-0.5 px-1.5 rounded-md bg-surface-container-low/50">
-            <span className="text-primary-container">{getCategoryIcon(task.category)}</span>
-            <span>{categoryLabel[task.category]}</span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className={`truncate text-base font-bold ${isCompleted ? 'text-slate-500 line-through' : 'text-slate-950 dark:text-white'}`}>{task.title}</h3>
+            <span className="rounded-md bg-indigo-50 px-2 py-1 text-[11px] font-bold text-indigo-700">{categoryLabel[task.category]}</span>
+            <span className="rounded-md bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-700">
+              <Flag className="mr-1 inline h-3 w-3" />
+              {priorityLabel[task.priority]} · {task.weight}점
+            </span>
           </div>
 
-          {task.dueDate && (
-            <div className="flex items-center gap-1 text-[11px] text-outline font-medium">
-              <Calendar className="w-3 h-3 text-outline/80" />
-              <span>{task.dueDate}</span>
-            </div>
-          )}
-
-          {postpones > 0 && !isCompleted && (
-            <span className={`flex items-center gap-0.5 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md border ${
-              postpones >= 2 
-                ? 'bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800/50' 
-                : 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/50'
-            }`}>
-              <Clock className="w-2.5 h-2.5 animate-spin" style={{ animationDuration: postpones >= 2 ? '3s' : '6s' }} />
-              <span>미루기 +{postpones}회</span>
+          <div className="mt-3 grid gap-2 text-xs text-slate-600 dark:text-slate-300 sm:grid-cols-2">
+            <span className="flex items-center gap-1.5">
+              <UserRound className="h-3.5 w-3.5" />
+              생성 {creator} · 담당 {assignee}
             </span>
+            <span className="flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5" />
+              {task.dueDate}
+            </span>
+            {task.completedById && (
+              <span className="flex items-center gap-1.5 font-semibold text-emerald-700">
+                <Check className="h-3.5 w-3.5" />
+                {completedBy} 완료
+              </span>
+            )}
+            {task.attachment && (
+              <a
+                href={task.attachment.dataUrl}
+                download={task.attachment.fileName}
+                className="flex items-center gap-1.5 font-semibold text-indigo-700 hover:underline"
+              >
+                <Download className="h-3.5 w-3.5" />
+                {task.attachment.fileName}
+              </a>
+            )}
+          </div>
+
+          {task.completionNote && (
+            <p className="mt-3 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-900">
+              <FileText className="mr-1 inline h-3.5 w-3.5" />
+              {task.completionNote}
+            </p>
           )}
         </div>
-      </div>
 
-      <div className="flex flex-col items-end gap-3 flex-shrink-0">
-        <div className="relative">
+        <div className="flex shrink-0 flex-col items-end gap-2">
           <select
             value={task.status}
-            onChange={(e) => onStatusChange(task.id, e.target.value as Task['status'])}
-            className="text-[11px] bg-surface-container font-semibold py-1 px-2 pr-4 rounded-lg border-none focus:ring-1 focus:ring-primary/20 shadow-sm cursor-pointer text-on-surface-variant hover:bg-surface-container-high transition-colors"
+            onChange={(event) => onStatusChange(task.id, event.target.value as Task['status'])}
+            className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
           >
-            <option value="To Do">할 일</option>
-            <option value="In Progress">진행 중</option>
-            <option value="Completed">완료</option>
+            <option value="To Do">{statusLabel['To Do']}</option>
+            <option value="In Progress">{statusLabel['In Progress']}</option>
+            <option value="Completed">{statusLabel.Completed}</option>
           </select>
-        </div>
 
-        <div className="flex gap-2 items-center">
-          {onPostpone && !isCompleted && (
-            <button
-              onClick={() => onPostpone(task.id)}
-              className="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 transition-all p-1 hover:bg-amber-100 dark:hover:bg-amber-950/50 rounded flex items-center justify-center hover:scale-105 active:scale-95"
-              title="하루 미루기"
-            >
-              <Clock className="w-4 h-4 font-bold" />
+          <div className="flex gap-1">
+            {onPostpone && !isCompleted && (
+              <button onClick={() => onPostpone(task.id)} className="rounded-md p-1.5 text-slate-500 hover:bg-amber-50 hover:text-amber-700" title="하루 미루기">
+                <Paperclip className="h-4 w-4" />
+              </button>
+            )}
+            <button onClick={() => onEdit(task)} className="rounded-md p-1.5 text-slate-500 hover:bg-indigo-50 hover:text-indigo-700" title="수정">
+              <Edit2 className="h-4 w-4" />
             </button>
-          )}
-          <button
-            onClick={() => onEdit(task)}
-            className="text-on-surface-variant hover:text-primary transition-colors p-1 hover:bg-surface-container rounded"
-            title="할 일 수정"
-          >
-            <Edit2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onDelete(task.id)}
-            className="text-on-surface-variant hover:text-danger-rose transition-colors p-1 hover:bg-danger-container/10 rounded"
-            title="할 일 삭제"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+            <button onClick={() => onDelete(task.id)} className="rounded-md p-1.5 text-slate-500 hover:bg-rose-50 hover:text-rose-700" title="삭제">
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
